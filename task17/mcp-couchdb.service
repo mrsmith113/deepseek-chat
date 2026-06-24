@@ -1,0 +1,15 @@
+[Unit]
+Description=MCP CouchDB Server (Task 17)
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/mcp-couchdb
+EnvironmentFile=/opt/mcp-couchdb/.env
+ExecStart=/opt/mcp-couchdb/venv/bin/python server.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
