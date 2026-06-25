@@ -1,0 +1,15 @@
+[Unit]
+Description=MCP Pipeline Server (Task 19)
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/mcp-pipeline
+EnvironmentFile=/opt/mcp-pipeline/.env
+ExecStart=/opt/mcp-pipeline/venv/bin/python server.py
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

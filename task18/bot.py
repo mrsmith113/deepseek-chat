@@ -5,6 +5,7 @@ bot.py — Challenge NewsBot (python-telegram-bot 22.x)
 import os
 import asyncio
 import logging
+import httpx
 from datetime import datetime
 
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
@@ -14,6 +15,8 @@ from telegram.ext import (
 )
 from telegram.constants import ParseMode
 from dotenv import load_dotenv
+from mcp import ClientSession
+from mcp.client.streamable_http import streamable_http_client
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -24,6 +27,10 @@ import scheduler as sched
 
 BOT_TOKEN = os.environ["BOT_TOKEN"]
 ADMIN_CHAT_ID = int(os.environ["ADMIN_CHAT_ID"])
+
+# MCP Pipeline сервер (Task 19)
+MCP_PIPELINE_URL   = os.getenv("MCP_PIPELINE_URL", "https://api1.notifikatai.ru/mcp-pipeline")
+MCP_PIPELINE_TOKEN = os.environ["MCP_PIPELINE_TOKEN"]
 
 
 # ── Guard ──────────────────────────────────────────────────────────────────────
@@ -126,7 +133,8 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "/digest — дайджест прямо сейчас\n"
         "/stats — статистика\n"
         "/collect — собрать посты сейчас\n"
-        "/schedule — текущее расписание",
+        "/schedule — текущее расписание\n"
+        "/pipeline [канал] [часы] — MCP-пайплайн с чёрным юмором",
         parse_mode=ParseMode.MARKDOWN,
         reply_markup=main_menu_kb(),
     )
@@ -175,6 +183,86 @@ async def cmd_digest(update: Update, context: ContextTypes.DEFAULT_TYPE):
     m = await update.message.reply_text("⏳ Генерирую дайджест...")
     await sched.digest_job()
     await m.delete()
+
+
+@admin_only
+async def cmd_pipeline(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """
+    /pipeline [channel] [hours]
+    Запускает MCP-пайплайн: search_posts -> summarize_with_humor -> save_to_file
+    Пример: /pipeline alexgladkovblog 24
+    """
+    args = context.args or []
+    channel = args[0].lstrip("@") if args else "alexgladkovblog"
+    try:
+        hours = int(args[1]) if len(args) > 1 else 24
+    except ValueError:
+        hours = 24
+
+    m = await update.message.reply_text(
+        f"🔍 *Шаг 1/3:* ищу посты @{channel} за {hours}ч...",
+        parse_mode=ParseMode.MARKDOWN,
+    )
+
+    try:
+        http_client = httpx.AsyncClient(
+            headers={"Authorization": f"Bearer {MCP_PIPELINE_TOKEN}"},
+            timeout=60,
+        )
+
+        async with streamable_http_client(MCP_PIPELINE_URL, http_client=http_client) as (read, write, _):
+            async with ClientSession(read, write) as session:
+                await session.initialize()
+
+                # ШАГ 1: search_posts
+                result = await session.call_tool(
+                    "search_posts", {"channel": channel, "hours": hours}
+                )
+                posts_text = result.content[0].text
+
+                if posts_text.startswith("[search_posts] No posts"):
+                    await m.edit_text(
+                        f"😴 Постов от @{channel} за последние {hours}ч не найдено.\n"
+                        f"Может, он молчит. Что в целом мудро."
+                    )
+                    return
+
+                # ШАГ 2: summarize_with_humor
+                await m.edit_text(
+                    f"✍️ *Шаг 2/3:* скармливаю DeepSeek, жду чёрного юмора...",
+                    parse_mode=ParseMode.MARKDOWN,
+                )
+                result = await session.call_tool(
+                    "summarize_with_humor", {"text": posts_text, "channel": channel}
+                )
+                summary = result.content[0].text
+
+                # ШАГ 3: save_to_file
+                await m.edit_text(
+                    f"💾 *Шаг 3/3:* сохраняю результат...",
+                    parse_mode=ParseMode.MARKDOWN,
+                )
+                result = await session.call_tool(
+                    "save_to_file", {"content": summary, "filename": channel}
+                )
+                save_info = result.content[0].text
+
+        # Финальный ответ
+        post_count = posts_text.count("\n\n") or 1
+        await m.edit_text(
+            f"✅ *Пайплайн завершён*\n"
+            f"_Канал:_ @{channel} | _Постов:_ ~{post_count} | _Период:_ {hours}ч\n\n"
+            f"{summary}\n\n"
+            f"_{save_info}_",
+            parse_mode=ParseMode.MARKDOWN,
+        )
+
+    except Exception as e:
+        logger.exception("pipeline error")
+        await m.edit_text(
+            f"❌ Ошибка пайплайна: `{type(e).__name__}: {str(e)[:200]}`",
+            parse_mode=ParseMode.MARKDOWN,
+        )
 
 
 @admin_only
@@ -330,6 +418,7 @@ def main():
     app.add_handler(CommandHandler("collect", cmd_collect))
     app.add_handler(CommandHandler("digest", cmd_digest))
     app.add_handler(CommandHandler("schedule", cmd_schedule))
+    app.add_handler(CommandHandler("pipeline", cmd_pipeline))
     app.add_handler(CallbackQueryHandler(handle_callback))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
 

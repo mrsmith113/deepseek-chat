@@ -122,6 +122,20 @@ def save_post(channel: str, post_id: int, text: str, url: str) -> bool:
         return False
 
 
+def get_posts_by_channel(channel: str, hours: int = 24, limit: int = 20) -> list[dict]:
+    """Посты конкретного канала за последние N часов."""
+    with get_conn() as conn:
+        rows = conn.execute(
+            """SELECT * FROM raw_posts
+               WHERE channel = ?
+                 AND collected_at >= datetime('now', ?)
+               ORDER BY collected_at DESC
+               LIMIT ?""",
+            (channel.lstrip("@"), f"-{hours} hours", limit),
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+
 def get_unprocessed_posts(limit: int = 50) -> list[dict]:
     with get_conn() as conn:
         rows = conn.execute(
