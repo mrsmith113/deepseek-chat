@@ -1,0 +1,16 @@
+[Unit]
+Description=Challenge NewsBot MCP Server — Task 18
+After=network.target challenge-bot.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/challenge-bot
+EnvironmentFile=/opt/challenge-bot/.env
+ExecStart=/opt/challenge-bot/venv/bin/python server.py
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

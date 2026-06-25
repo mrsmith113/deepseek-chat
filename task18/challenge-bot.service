@@ -1,0 +1,16 @@
+[Unit]
+Description=Challenge NewsBot — Task 18 AI Digest Bot
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/challenge-bot
+EnvironmentFile=/opt/challenge-bot/.env
+ExecStart=/opt/challenge-bot/venv/bin/python bot.py
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
