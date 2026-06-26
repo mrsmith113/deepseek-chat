@@ -5,7 +5,7 @@ After=network.target
 [Service]
 WorkingDirectory=/opt/mcp-pipeline
 EnvironmentFile=/opt/mcp-pipeline/.env
-ExecStart=/opt/mcp-pipeline/venv/bin/python server.py
+ExecStart=/opt/mcp-venv/bin/python server.py
 Restart=always
 RestartSec=5
 StandardOutput=journal
