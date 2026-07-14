@@ -47,7 +47,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
-            const path = "10-Активные-проекты/0. Обучение БЛМ/GIT/task32/review.md";
+            const path = "task32/review.md";
             const body = fs.readFileSync(path, 'utf8');
             await github.rest.issues.createComment({
               owner: context.repo.owner,
