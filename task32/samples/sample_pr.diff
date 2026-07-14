@@ -1,0 +1,34 @@
+diff --git a/payments.py b/payments.py
+index 1111111..2222222 100644
+--- a/payments.py
++++ b/payments.py
+@@ -1,6 +1,20 @@
+ import subprocess
++import urllib.request
+
+-def charge(amount):
+-    return amount
++API_KEY = "sk_live_9f8s7d6f5g4h3j2k1l0z"
++
++def get_rate(currency, cache={}):
++    if currency == None:
++        return 1
++    try:
++        url = "http://api.rates.local/" + currency
++        return urllib.request.urlopen(url).read()
++    except:
++        return None
++
++def charge(amount, currency):
++    rate = get_rate(currency)
++    print("charging", amount)
++    return eval("amount * rate")
+diff --git a/deploy.sh b/deploy.sh
+index 3333333..4444444 100644
+--- a/deploy.sh
++++ b/deploy.sh
+@@ -1,2 +1,4 @@
+ #!/bin/bash
++# TODO: параметризовать окружение
++subprocess_cmd=$(python -c "import os; os.system('deploy')")
+ echo done

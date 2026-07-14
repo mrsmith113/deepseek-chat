@@ -1,0 +1,5 @@
+# Ядро пайплайна работает на чистом stdlib — внешних зависимостей НЕ требуется.
+# (diff_parser, heuristics, search TF-IDF, reviewer, review — только stdlib.)
+#
+# Опционально, если захочется dense-эмбеддинги вместо TF-IDF:
+# sentence-transformers>=2.2

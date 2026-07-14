@@ -1,0 +1,634 @@
+[
+  {
+    "source": "EXPLANATION.md",
+    "title": "Объяснение task32 — как для ребёнка",
+    "section": "intro",
+    "text": "# Объяснение task32 — как для ребёнка",
+    "kind": "doc",
+    "chunk_id": 0
+  },
+  {
+    "source": "EXPLANATION.md",
+    "title": "Объяснение task32 — как для ребёнка",
+    "section": "Что мы сделали (одним абзацем)",
+    "text": "Представь, что в мастерскую приносят починенную игрушку, и опытный мастер\nбыстро осматривает: не торчит ли гвоздь, надёжно ли держится колесо, красиво ли\nпокрашено. Мы сделали такого «мастера», но для кода. Когда программист приносит\nизменения (Pull Request), наш помощник сам смотрит, что именно поменяли,\nсверяется с правилами и документацией проекта, и пишет отзыв: где возможна ошибка,\nгде криво устроено, что стоит улучшить. И делает это сам, без человека.",
+    "kind": "doc",
+    "chunk_id": 1
+  },
+  {
+    "source": "EXPLANATION.md",
+    "title": "Объяснение task32 — как для ребёнка",
+    "section": "Разбор терминов (своими словами + пример из жизни)",
+    "text": "| Термин | Простыми словами | Пример из жизни |\n|---|---|---|\n| **Pull Request (PR)** | Заявка «я поменял вот это, гляньте» | Ученик сдаёт тетрадь на проверку |\n| **diff** | Список: что убрали, что дописали | Красная ручка учителя: зачёркнуто/добавлено |\n| **изменённые файлы** | Какие страницы тетради трогали | «Смотри только страницы 3 и 7» |\n| **RAG** | Помощник сначала читает справочник, потом отвечает | Врач заглядывает в карту пациента перед диагнозом |\n| **эвристики** | Простые правила «если увидел X — это плохо» | «Если провод оголён — опасно», без раздумий |\n| **LLM** | Умная нейросеть, пишет отзыв словами | Опытный наставник объясняет, что не так |\n| **GitHub Action** | Робот, который сам запускается на каждую заявку | Автоматическая мойка: заехал — помыли |\n| **TF-IDF** | Способ найти похожий кусок текста по словам | Ищешь в оглавлении главу по ключевому слову |",
+    "kind": "doc",
+    "chunk_id": 2
+  },
+  {
+    "source": "EXPLANATION.md",
+    "title": "Объяснение task32 — как для ребёнка",
+    "section": "Почему сделали именно так",
+    "text": "- **Разбили на маленькие кубики** (парсер, эвристики, поиск, ревьюер). Один\n  кубик — одно дело. Легко чинить и понимать, как коробка с отдельными ящичками,\n  а не свалка.\n- **Сделали, чтобы работало без интернета.** Умная нейросеть (LLM) не всегда под\n  рукой: то ключа нет, то сервер выключен. Поэтому есть простые правила\n  (эвристики), которые всегда дадут отзыв. Нейросеть — приятный бонус сверху,\n  а не единственная опора. Как фонарик со свечкой про запас.\n- **RAG по коду И документации.** Мастер смотрит не только на саму деталь, но и\n  на чертёж всего изделия. Так отзыв точнее: помощник знает правила проекта.\n- **Переиспользовали прошлый таск (task31.1).** Поиск и работу с git уже писали\n  раньше — не стали делать заново. Зачем изобретать колесо.",
+    "kind": "doc",
+    "chunk_id": 3
+  },
+  {
+    "source": "EXPLANATION.md",
+    "title": "Объяснение task32 — как для ребёнка",
+    "section": "Что ещё могло быть (альтернативы)",
+    "text": "| Вариант | Плюс | Минус |\n|---|---|---|\n| Только нейросеть (LLM) | Красивый живой отзыв | Падает без сети/ключа, стоит денег, может выдумать |\n| Только эвристики (наш fallback) | Быстро, бесплатно, надёжно | Не понимает смысл, ловит лишь шаблоны |\n| Готовый линтер (flake8/eslint) | Проверено временем | Не знает контекст проекта, не пишет человеческий отзыв |\n| **Наш гибрид (эвристики + RAG + LLM)** | Работает всегда, учитывает контекст | Чуть больше кода собрать |\n| Векторная БД Qdrant вместо JSON | Масштаб на миллионы файлов | Надо поднимать сервер; для одного репо избыточно |",
+    "kind": "doc",
+    "chunk_id": 4
+  },
+  {
+    "source": "EXPLANATION.md",
+    "title": "Объяснение task32 — как для ребёнка",
+    "section": "Итог одной фразой",
+    "text": "Робот-рецензент: сам берёт изменения в коде, сверяется с правилами и\nдокументацией проекта и пишет понятный отзыв — где баг, где криво, что улучшить —\nпричём работает даже без нейросети.",
+    "kind": "doc",
+    "chunk_id": 5
+  },
+  {
+    "source": "README.md",
+    "title": "task32 — Автоматизация ревью кода (AI code review PR)",
+    "section": "intro",
+    "text": "# task32 — Автоматизация ревью кода (AI code review PR)\n\nДень 32 курса БЛМ. Пайплайн, где ассистент анализирует новый Pull Request:\nполучает diff и изменённые файлы, использует RAG (документация + код) и выдаёт\nтекст ревью — **потенциальные баги · архитектурные проблемы · рекомендации**.",
+    "kind": "doc",
+    "chunk_id": 6
+  },
+  {
+    "source": "README.md",
+    "title": "task32 — Автоматизация ревью кода (AI code review PR)",
+    "section": "Как это работает",
+    "text": "```\nPR ──▶ git diff BASE...HEAD ──▶ diff_parser ──▶ heuristics (стат.анализ)\n                                     │                  │\n                                     ▼                  ▼\n                                RAG (doc+код)  ──▶  reviewer (LLM-каскад)\n                                                        │\n                                                        ▼\n                                              review.md ──▶ комментарий в PR\n```",
+    "kind": "doc",
+    "chunk_id": 7
+  },
+  {
+    "source": "README.md",
+    "title": "task32 — Автоматизация ревью кода (AI code review PR)",
+    "section": "Как это работает",
+    "text": "- **diff_parser.py** — из unified diff достаёт изменённые файлы и добавленные строки.\n- **heuristics.py** — офлайн-линтер: секреты, `eval/exec`, широкие `except`,\n  мутабельные дефолты, `== None`, `print`, длинные строки, крупный diff.\n- **search.py + chunking.py + indexer.py** — RAG (TF-IDF, косинус) над\n  документацией **и кодом** проекта. Индекс в `index.json`, без внешней БД.\n- **reviewer.py** — собирает всё вместе; генерация: DeepSeek API → Ollama →\n  без LLM (эвристики + RAG). Ревью содержательное в любом случае.\n- **review.py** — CLI-точка входа (её зовёт GitHub Action).\n- **.github/workflows/ai-review.yml** — запуск на `pull_request`, постинг ревью\n  комментарием.",
+    "kind": "doc",
+    "chunk_id": 8
+  },
+  {
+    "source": "README.md",
+    "title": "task32 — Автоматизация ревью кода (AI code review PR)",
+    "section": "Запуск (офлайн, одной командой)",
+    "text": "```bash\nbash run.sh\n```\n\nИли вручную:\n\n```bash\npython3 indexer.py                                  # собрать RAG-индекс\npython3 review.py --diff samples/sample_pr.diff     # ревью демо-PR\npython3 review.py --base origin/master --out review.md   # ревью реального PR\npython3 review.py --no-llm                          # только эвристики + RAG\n```",
+    "kind": "doc",
+    "chunk_id": 9
+  },
+  {
+    "source": "README.md",
+    "title": "task32 — Автоматизация ревью кода (AI code review PR)",
+    "section": "LLM (опционально)",
+    "text": "- `DEEPSEEK_API_KEY` — включает генерацию через DeepSeek.\n- Иначе пробуется Ollama (`OLLAMA_MODEL`, по умолч. `qwen3:14b`) на :11434.\n- Нет ни того, ни другого — ревью соберут эвристики + RAG-контекст.",
+    "kind": "doc",
+    "chunk_id": 10
+  },
+  {
+    "source": "README.md",
+    "title": "task32 — Автоматизация ревью кода (AI code review PR)",
+    "section": "Зависимости",
+    "text": "Нет. Только стандартная библиотека Python 3.10+.",
+    "kind": "doc",
+    "chunk_id": 11
+  },
+  {
+    "source": "VIDEO_SCENARIO.md",
+    "title": "Сценарий видео — task32: Автоматизация ревью кода (5–7 мин)",
+    "section": "intro",
+    "text": "# Сценарий видео — task32: Автоматизация ревью кода (5–7 мин)",
+    "kind": "doc",
+    "chunk_id": 12
+  },
+  {
+    "source": "VIDEO_SCENARIO.md",
+    "title": "Сценарий видео — task32: Автоматизация ревью кода (5–7 мин)",
+    "section": "0. Вступление (0:00–0:40)",
+    "text": "Голос: «День 32. Задача — сделать так, чтобы новый Pull Request автоматически\nпроходил AI-ревью. Ассистент получает diff, использует RAG по документации и\nкоду, и возвращает три вещи: потенциальные баги, архитектурные проблемы,\nрекомендации. Всё работает офлайн, а в CI — как GitHub Action.»\n\nПоказать на экране структуру папки:\n```bash\nls task32\n```",
+    "kind": "doc",
+    "chunk_id": 13
+  },
+  {
+    "source": "VIDEO_SCENARIO.md",
+    "title": "Сценарий видео — task32: Автоматизация ревью кода (5–7 мин)",
+    "section": "1. Из чего собран пайплайн (0:40–2:00)",
+    "text": "Голос: «Пять кубиков, каждый — одна ответственность.»\nОткрыть по очереди, коротко:\n- `diff_parser.py` — парсит unified diff, достаёт добавленные строки.\n- `heuristics.py` — статический анализатор: секреты, eval, широкий except…\n- `search.py` + `chunking.py` — RAG над **доками и кодом** (TF-IDF, офлайн).\n- `reviewer.py` — склеивает всё + LLM-каскад DeepSeek→Ollama→без LLM.\n- `.github/workflows/ai-review.yml` — запуск на PR.",
+    "kind": "doc",
+    "chunk_id": 14
+  },
+  {
+    "source": "VIDEO_SCENARIO.md",
+    "title": "Сценарий видео — task32: Автоматизация ревью кода (5–7 мин)",
+    "section": "2. Строим индекс (2:00–2:40)",
+    "text": "```bash\npython3 indexer.py\n```\nГолос: «RAG-индекс собран из README, docs и всех .py — 58 чанков,\nдокументация плюс код. Это контекст, с которым ассистент сверяет изменения.»",
+    "kind": "doc",
+    "chunk_id": 15
+  },
+  {
+    "source": "VIDEO_SCENARIO.md",
+    "title": "Сценарий видео — task32: Автоматизация ревью кода (5–7 мин)",
+    "section": "3. Ревьюим PR (2:40–4:30)",
+    "text": "Показать демо-diff с зашитыми проблемами:\n```bash\ncat samples/sample_pr.diff\n```\nГолос: «Тут захардкожен ключ, eval на входных данных, голый except,\nмутабельный дефолт — типичные грабли.»\n\nЗапуск:\n```bash\npython3 review.py --diff samples/sample_pr.diff\n```\nПоказать вывод: три раздела, находки с файлом и строкой, RAG-контекст в конце.\nГолос: «Ассистент нашёл секрет, инъекцию через eval, широкий except,\nсравнение с None — всё с точным файлом и номером строки.»",
+    "kind": "doc",
+    "chunk_id": 16
+  },
+  {
+    "source": "VIDEO_SCENARIO.md",
+    "title": "Сценарий видео — task32: Автоматизация ревью кода (5–7 мин)",
+    "section": "4. Как это в CI (4:30–6:00)",
+    "text": "Открыть `.github/workflows/ai-review.yml`.\nГолос: «На каждый pull request Action берёт git diff BASE...HEAD, гоняет тот же\nreview.py и постит результат комментарием в PR. Ключ DeepSeek — опционально\nчерез secrets; без него ревью соберут эвристики и RAG. То есть пайплайн не\nпадает, если LLM недоступна.»",
+    "kind": "doc",
+    "chunk_id": 17
+  },
+  {
+    "source": "VIDEO_SCENARIO.md",
+    "title": "Сценарий видео — task32: Автоматизация ревью кода (5–7 мин)",
+    "section": "5. Вывод (6:00–6:40)",
+    "text": "Голос: «Итог: автоматическое AI-ревью кода. PR → diff → RAG по докам и коду →\nтекст ревью с багами, архитектурой и рекомендациями. Ноль внешних зависимостей,\nработает и локально, и в GitHub Actions.»",
+    "kind": "doc",
+    "chunk_id": 18
+  },
+  {
+    "source": "VIDEO_SCENARIO.md",
+    "title": "Сценарий видео — task32: Автоматизация ревью кода (5–7 мин)",
+    "section": "Порядок команд для съёмки",
+    "text": "```bash\ncd task32\nls\npython3 indexer.py\ncat samples/sample_pr.diff\npython3 review.py --diff samples/sample_pr.diff\n```",
+    "kind": "doc",
+    "chunk_id": 19
+  },
+  {
+    "source": "chunking.py",
+    "title": "chunking",
+    "section": "module",
+    "text": "\"\"\"Чанкинг источников для RAG: документация (markdown) + код (python).\n\nЗадание требует RAG «документация + код», поэтому индексируем оба вида:\n  * markdown — по секциям (заголовки ## / ###), как в task31.1;\n  * python   — по определениям (def / class верхнего уровня) + модульный intro.\n\nОдна ответственность: превратить файлы проекта в список чанков с метаданными\n(source, title, section, chunk_id).\n\"\"\"\nfrom __future__ import annotations\n\nimport re\nfrom pathlib import Path\n\nMAX_CHARS = 900  # мягкий предел длины чанка\n\n# что НЕ индексируем (артефакты, окружения, сам ревьюер-инструмент опционально)\nSKIP_DIRS = {\".git\", \"__pycache__\", \".github\", \"node_modules\", \".venv\", \"venv\"}\nSKIP_FILES = {\"index.json\", \"review.md\"}  # артефакты ревьюера не индексируем",
+    "kind": "code",
+    "chunk_id": 20
+  },
+  {
+    "source": "chunking.py",
+    "title": "chunking",
+    "section": "def _split_long",
+    "text": "def _split_long(text: str, limit: int = MAX_CHARS) -> list[str]:\n    if len(text) <= limit:\n        return [text]\n    parts, buf = [], \"\"\n    for para in text.split(\"\\n\\n\"):\n        if len(buf) + len(para) + 2 > limit and buf:\n            parts.append(buf.strip())\n            buf = \"\"\n        buf += para + \"\\n\\n\"\n    if buf.strip():\n        parts.append(buf.strip())\n    return parts\n\n\n# --------------------------------------------------------------- markdown ----",
+    "kind": "code",
+    "chunk_id": 21
+  },
+  {
+    "source": "chunking.py",
+    "title": "chunking",
+    "section": "def chunk_markdown",
+    "text": "def chunk_markdown(path: Path) -> list[dict]:\n    raw = path.read_text(encoding=\"utf-8\", errors=\"ignore\")\n    lines = raw.splitlines()\n\n    doc_title = path.stem\n    for ln in lines:\n        m = re.match(r\"^#\\s+(.+)\", ln)\n        if m:\n            doc_title = m.group(1).strip()\n            break\n\n    chunks: list[dict] = []\n    section = \"intro\"\n    body: list[str] = []\n\n    def flush():\n        text = \"\\n\".join(body).strip()\n        if not text:\n            return\n        for piece in _split_long(text):\n            chunks.append({\"source\": path.name, \"title\": doc_title,\n                           \"section\": section, \"text\": piece, \"kind\": \"doc\"})\n\n    for ln in lines:\n        m = re.match(r\"^#{2,3}\\s+(.+)\", ln)\n        if m:\n            flush()\n            body = []\n            section = m.group(1).strip()\n        else:\n            body.append(ln)\n    flush()\n    return chunks",
+    "kind": "code",
+    "chunk_id": 22
+  },
+  {
+    "source": "chunking.py",
+    "title": "chunking",
+    "section": "def chunk_markdown",
+    "text": "# ------------------------------------------------------------------ python ---\n_DEF = re.compile(r\"^(?:async\\s+)?(def|class)\\s+([A-Za-z_]\\w*)\")",
+    "kind": "code",
+    "chunk_id": 23
+  },
+  {
+    "source": "chunking.py",
+    "title": "chunking",
+    "section": "def chunk_python",
+    "text": "def chunk_python(path: Path) -> list[dict]:\n    \"\"\"Режет .py по определениям верхнего уровня. Каждый def/class — чанк.\"\"\"\n    raw = path.read_text(encoding=\"utf-8\", errors=\"ignore\")\n    lines = raw.splitlines()\n\n    chunks: list[dict] = []\n    section = \"module\"\n    body: list[str] = []\n\n    def flush():\n        text = \"\\n\".join(body).strip()\n        if not text:\n            return\n        for piece in _split_long(text):\n            chunks.append({\"source\": path.name, \"title\": path.stem,\n                           \"section\": section, \"text\": piece, \"kind\": \"code\"})\n\n    for ln in lines:\n        m = _DEF.match(ln)  # только верхний уровень (без отступа)\n        if m:\n            flush()\n            body = [ln]\n            section = f\"{m.group(1)} {m.group(2)}\"\n        else:\n            body.append(ln)\n    flush()\n    return chunks",
+    "kind": "code",
+    "chunk_id": 24
+  },
+  {
+    "source": "chunking.py",
+    "title": "chunking",
+    "section": "def chunk_python",
+    "text": "# --------------------------------------------------------------- collect -----",
+    "kind": "code",
+    "chunk_id": 25
+  },
+  {
+    "source": "chunking.py",
+    "title": "chunking",
+    "section": "def _iter_files",
+    "text": "def _iter_files(root: Path):\n    for p in sorted(root.rglob(\"*\")):\n        if not p.is_file():\n            continue\n        if any(part in SKIP_DIRS for part in p.parts):\n            continue\n        if p.name in SKIP_FILES:\n            continue\n        if p.suffix in (\".md\", \".py\"):\n            yield p",
+    "kind": "code",
+    "chunk_id": 26
+  },
+  {
+    "source": "chunking.py",
+    "title": "chunking",
+    "section": "def chunk_dir",
+    "text": "def chunk_dir(root: Path) -> list[dict]:\n    \"\"\"Собирает чанки со всех .md и .py под root. Проставляет chunk_id.\"\"\"\n    all_chunks: list[dict] = []\n    for f in _iter_files(root):\n        if f.suffix == \".md\":\n            all_chunks.extend(chunk_markdown(f))\n        elif f.suffix == \".py\":\n            all_chunks.extend(chunk_python(f))\n    for i, c in enumerate(all_chunks):\n        c[\"chunk_id\"] = i\n    return all_chunks\n\n\nif __name__ == \"__main__\":\n    here = Path(__file__).parent\n    cs = chunk_dir(here)\n    docs = sum(1 for c in cs if c[\"kind\"] == \"doc\")\n    code = sum(1 for c in cs if c[\"kind\"] == \"code\")\n    print(f\"Чанков: {len(cs)} (doc={docs}, code={code})\")\n    for c in cs[:4]:\n        print(f\"  [{c['chunk_id']}] {c['kind']:4} {c['source']} :: \"\n              f\"{c['section']} — {c['text'][:50]}...\")",
+    "kind": "code",
+    "chunk_id": 27
+  },
+  {
+    "source": "diff_parser.py",
+    "title": "diff_parser",
+    "section": "module",
+    "text": "\"\"\"Парсер unified diff → структура изменений.\n\nОдна ответственность: из текста `git diff` вытащить, что нужно ревьюеру:\n  * список изменённых файлов,\n  * добавленные строки (с номерами в новом файле) — их и ревьюим,\n  * язык файла (для выбора эвристик).\n\nНе зависит от git — принимает готовый текст diff (из git_tools.pr_diff,\nиз файла *.diff или из stdin). Это делает пайплайн тестируемым офлайн.\n\"\"\"\nfrom __future__ import annotations\n\nimport re\nfrom dataclasses import dataclass, field\n\n_HUNK = re.compile(r\"^@@ -\\d+(?:,\\d+)? \\+(\\d+)(?:,\\d+)? @@\")\n\n_LANG = {\n    \".py\": \"python\", \".js\": \"javascript\", \".ts\": \"typescript\",\n    \".go\": \"go\", \".java\": \"java\", \".rb\": \"ruby\", \".rs\": \"rust\",\n    \".md\": \"markdown\", \".yml\": \"yaml\", \".yaml\": \"yaml\", \".sh\": \"shell\",\n}\n\n\n@dataclass",
+    "kind": "code",
+    "chunk_id": 28
+  },
+  {
+    "source": "diff_parser.py",
+    "title": "diff_parser",
+    "section": "class AddedLine",
+    "text": "class AddedLine:\n    lineno: int   # номер строки в НОВОМ файле\n    text: str     # содержимое (без ведущего '+')\n\n\n@dataclass",
+    "kind": "code",
+    "chunk_id": 29
+  },
+  {
+    "source": "diff_parser.py",
+    "title": "diff_parser",
+    "section": "class FileDiff",
+    "text": "class FileDiff:\n    path: str\n    lang: str = \"text\"\n    added: list[AddedLine] = field(default_factory=list)\n    raw_hunks: list[str] = field(default_factory=list)\n\n    @property\n    def added_text(self) -> str:\n        return \"\\n\".join(a.text for a in self.added)",
+    "kind": "code",
+    "chunk_id": 30
+  },
+  {
+    "source": "diff_parser.py",
+    "title": "diff_parser",
+    "section": "def _lang_of",
+    "text": "def _lang_of(path: str) -> str:\n    for ext, lang in _LANG.items():\n        if path.endswith(ext):\n            return lang\n    return \"text\"",
+    "kind": "code",
+    "chunk_id": 31
+  },
+  {
+    "source": "diff_parser.py",
+    "title": "diff_parser",
+    "section": "def parse_diff",
+    "text": "def parse_diff(diff_text: str) -> list[FileDiff]:\n    \"\"\"Разбирает unified diff в список FileDiff с добавленными строками.\"\"\"\n    files: list[FileDiff] = []\n    cur: FileDiff | None = None\n    new_lineno = 0\n    hunk_buf: list[str] = []\n\n    def close_hunk():\n        if cur and hunk_buf:\n            cur.raw_hunks.append(\"\\n\".join(hunk_buf))",
+    "kind": "code",
+    "chunk_id": 32
+  },
+  {
+    "source": "diff_parser.py",
+    "title": "diff_parser",
+    "section": "def parse_diff",
+    "text": "for line in diff_text.splitlines():\n        if line.startswith(\"diff --git\"):\n            close_hunk()\n            hunk_buf = []\n            cur = None\n            continue\n        if line.startswith(\"+++ \"):\n            # +++ b/path  или  +++ /dev/null (удаление)\n            path = line[4:].strip()\n            path = path[2:] if path.startswith((\"a/\", \"b/\")) else path\n            if path == \"/dev/null\":\n                cur = None\n                continue\n            cur = FileDiff(path=path, lang=_lang_of(path))\n            files.append(cur)\n            continue\n        if line.startswith(\"--- \"):\n            continue\n        m = _HUNK.match(line)\n        if m:\n            close_hunk()\n            hunk_buf = [line]\n            new_lineno = int(m.group(1))\n            continue\n        if cur is None:\n            continue\n        hunk_buf.append(line)\n        if line.startswith(\"+\") and not line.startswith(\"+++\"):\n            cur.added.append(AddedLine(new_lineno, line[1:]))\n            new_lineno += 1\n        elif line.startswith(\"-\") and not line.startswith(\"---\"):\n            pass  # удалённая строка — номер в новом файле не растёт\n        else:\n            new_lineno += 1  # контекст",
+    "kind": "code",
+    "chunk_id": 33
+  },
+  {
+    "source": "diff_parser.py",
+    "title": "diff_parser",
+    "section": "def parse_diff",
+    "text": "close_hunk()\n    return files",
+    "kind": "code",
+    "chunk_id": 34
+  },
+  {
+    "source": "diff_parser.py",
+    "title": "diff_parser",
+    "section": "def summary",
+    "text": "def summary(files: list[FileDiff]) -> str:\n    parts = [f\"{f.path} (+{len(f.added)} строк, {f.lang})\" for f in files]\n    return \"Изменённые файлы:\\n\" + \"\\n\".join(f\"  • {p}\" for p in parts)\n\n\nif __name__ == \"__main__\":\n    import sys\n    from pathlib import Path\n    text = (Path(sys.argv[1]).read_text(\"utf-8\") if len(sys.argv) > 1\n            else sys.stdin.read())\n    fs = parse_diff(text)\n    print(summary(fs))\n    for f in fs[:3]:\n        print(f\"--- {f.path} ---\")\n        for a in f.added[:5]:\n            print(f\"  +{a.lineno}: {a.text}\")",
+    "kind": "code",
+    "chunk_id": 35
+  },
+  {
+    "source": "architecture.md",
+    "title": "Архитектура AI code review (task32)",
+    "section": "intro",
+    "text": "# Архитектура AI code review (task32)",
+    "kind": "doc",
+    "chunk_id": 36
+  },
+  {
+    "source": "architecture.md",
+    "title": "Архитектура AI code review (task32)",
+    "section": "Назначение",
+    "text": "Пайплайн автоматического ревью pull request. На вход — diff PR и изменённые\nфайлы, на выход — текст ревью с тремя разделами: потенциальные баги,\nархитектурные проблемы, рекомендации.",
+    "kind": "doc",
+    "chunk_id": 37
+  },
+  {
+    "source": "architecture.md",
+    "title": "Архитектура AI code review (task32)",
+    "section": "Поток данных",
+    "text": "1. **Источник diff** — GitHub Action на событии `pull_request` берёт\n   `git diff BASE...HEAD`. Локально можно подать готовый `.diff` файл.\n2. **diff_parser** — разбирает unified diff: изменённые файлы, добавленные\n   строки с номерами, язык файла.\n3. **heuristics** — статический анализатор по добавленным строкам: секреты,\n   широкие except, eval/exec, мутабельные дефолты, `== None`, `console.log`,\n   слишком длинные строки, крупный diff. Работает офлайн.\n4. **RAG** — по каждому изменённому файлу ищем в индексе (TF-IDF, косинус)\n   релевантные куски документации и кода проекта. Индекс — `index.json`,\n   без внешней БД.\n5. **LLM-каскад** — DeepSeek API → Ollama (Qwen3) → без LLM. LLM усиливает\n   ревью, но не обязательна: эвристики + RAG дают результат всегда.\n6. **Рендер** — итоговый markdown, который постится комментарием в PR.",
+    "kind": "doc",
+    "chunk_id": 38
+  },
+  {
+    "source": "architecture.md",
+    "title": "Архитектура AI code review (task32)",
+    "section": "Принципы",
+    "text": "- **Офлайн-first**: каждый шаг работает без сети и без поднятых сервисов.\n- **Одна ответственность на файл**: parser, heuristics, search, reviewer.\n- **Переиспользование**: search/chunking/git_tools взяты из task31.1.\n- **RAG = документация + код**: индексируем и `.md`, и `.py`.",
+    "kind": "doc",
+    "chunk_id": 39
+  },
+  {
+    "source": "review-rules.md",
+    "title": "Правила ревью и стандарты проекта",
+    "section": "intro",
+    "text": "# Правила ревью и стандарты проекта\n\nЭти правила использует RAG-контекст: ассистент сверяет diff с ними.",
+    "kind": "doc",
+    "chunk_id": 40
+  },
+  {
+    "source": "review-rules.md",
+    "title": "Правила ревью и стандарты проекта",
+    "section": "Безопасность",
+    "text": "- Секреты (пароли, токены, api-ключи) — только через переменные окружения,\n  никогда не хардкодить в коде.\n- Не использовать `eval` / `exec` на данных из вне — риск инъекции кода.\n- `subprocess` — без `shell=True` на пользовательском вводе.",
+    "kind": "doc",
+    "chunk_id": 41
+  },
+  {
+    "source": "review-rules.md",
+    "title": "Правила ревью и стандарты проекта",
+    "section": "Надёжность",
+    "text": "- Ловить конкретные исключения, а не голый `except:` — иначе глотаются баги.\n- Не использовать мутабельные аргументы по умолчанию (`def f(x=[])`).\n- Сравнение с None — через `is None`, не `== None`.",
+    "kind": "doc",
+    "chunk_id": 42
+  },
+  {
+    "source": "review-rules.md",
+    "title": "Правила ревью и стандарты проекта",
+    "section": "Стиль и архитектура",
+    "text": "- Логирование через `logging`, а не `print` в прод-коде.\n- Длина строки — до 120 символов.\n- Крупные PR (150+ добавленных строк в файл) желательно дробить.\n- Один модуль — одна ответственность.",
+    "kind": "doc",
+    "chunk_id": 43
+  },
+  {
+    "source": "review-rules.md",
+    "title": "Правила ревью и стандарты проекта",
+    "section": "Процесс",
+    "text": "- Каждый PR проходит автоматическое AI-ревью (GitHub Action `ai-review.yml`).\n- Ревью не блокирует мерж, а подсказывает — финальное решение за человеком.",
+    "kind": "doc",
+    "chunk_id": 44
+  },
+  {
+    "source": "git_tools.py",
+    "title": "git_tools",
+    "section": "module",
+    "text": "\"\"\"Живой git-контекст и diff PR.\n\nДостаёт из репозитория данные, которые нужны ревьюеру:\n  * git_branch      — текущая ветка,\n  * git_files       — файлы под контролем,\n  * diff_stat       — сводка изменений (--stat),\n  * pr_diff         — полный unified diff PR: <base>...<head>.\n\nПереиспользует подход git_tools.py из task31.1, добавляет получение diff\nотносительно базовой ветки (для GitHub Action на pull_request).\n\"\"\"\nfrom __future__ import annotations\n\nimport subprocess\nfrom pathlib import Path\n\n# Репозиторий — родитель папки task32 (корень GIT/).\nREPO = Path(__file__).resolve().parent.parent",
+    "kind": "code",
+    "chunk_id": 45
+  },
+  {
+    "source": "git_tools.py",
+    "title": "git_tools",
+    "section": "def _run",
+    "text": "def _run(args: list[str]) -> str:\n    try:\n        out = subprocess.run([\"git\", *args], cwd=REPO, capture_output=True,\n                             text=True, timeout=30)\n        return (out.stdout or out.stderr).strip()\n    except Exception as e:\n        return f\"[git error] {e}\"",
+    "kind": "code",
+    "chunk_id": 46
+  },
+  {
+    "source": "git_tools.py",
+    "title": "git_tools",
+    "section": "def git_branch",
+    "text": "def git_branch() -> str:\n    return _run([\"rev-parse\", \"--abbrev-ref\", \"HEAD\"]) or \"(unknown)\"",
+    "kind": "code",
+    "chunk_id": 47
+  },
+  {
+    "source": "git_tools.py",
+    "title": "git_tools",
+    "section": "def git_files",
+    "text": "def git_files(limit: int = 60) -> str:\n    files = [f for f in _run([\"ls-files\"]).splitlines() if f]\n    head = files[:limit]\n    extra = len(files) - len(head)\n    tail = f\"\\n… и ещё {extra} файлов\" if extra > 0 else \"\"\n    return \"\\n\".join(head) + tail",
+    "kind": "code",
+    "chunk_id": 48
+  },
+  {
+    "source": "git_tools.py",
+    "title": "git_tools",
+    "section": "def diff_stat",
+    "text": "def diff_stat(base: str | None = None, head: str = \"HEAD\") -> str:\n    args = [\"diff\", \"--stat\"]\n    args += [f\"{base}...{head}\"] if base else []\n    text = _run(args)\n    return text or \"(изменений нет)\"",
+    "kind": "code",
+    "chunk_id": 49
+  },
+  {
+    "source": "git_tools.py",
+    "title": "git_tools",
+    "section": "def pr_diff",
+    "text": "def pr_diff(base: str | None = None, head: str = \"HEAD\") -> str:\n    \"\"\"Полный unified diff. Если base задан — diff базы и head (для PR).\n\n    base=None → diff рабочего дерева (локальный режим / незакоммиченное).\n    \"\"\"\n    args = [\"diff\", \"--unified=3\", \"--no-color\"]\n    if base:\n        args.append(f\"{base}...{head}\")\n    return _run(args)\n\n\nif __name__ == \"__main__\":\n    print(\"branch:\", git_branch())\n    print(\"--- diff --stat ---\")\n    print(diff_stat())",
+    "kind": "code",
+    "chunk_id": 50
+  },
+  {
+    "source": "heuristics.py",
+    "title": "heuristics",
+    "section": "module",
+    "text": "\"\"\"Офлайн-эвристики code review (статические проверки без LLM).\n\nЗачем: пайплайн обязан выдавать ревью ДАЖЕ когда LLM недоступна\n(нет ключа DeepSeek, лежит Ollama). Эти правила ловят частые проблемы по\nдобавленным строкам diff и гарантируют непустой полезный результат.\nКогда LLM доступна — находки эвристик подмешиваются как надёжная база.\n\nКаждая находка: (severity, category, path:line, message).\ncategories: bug | arch | rec  (баг | архитектура | рекомендация).\n\"\"\"\nfrom __future__ import annotations\n\nimport re\nfrom dataclasses import dataclass\n\nfrom diff_parser import FileDiff\n\n\n@dataclass",
+    "kind": "code",
+    "chunk_id": 51
+  },
+  {
+    "source": "heuristics.py",
+    "title": "heuristics",
+    "section": "class Finding",
+    "text": "class Finding:\n    severity: str   # high | medium | low\n    category: str   # bug | arch | rec\n    path: str\n    line: int\n    message: str\n\n    def render(self) -> str:\n        icon = {\"high\": \"🔴\", \"medium\": \"🟠\", \"low\": \"🟡\"}[self.severity]\n        return f\"{icon} `{self.path}:{self.line}` — {self.message}\"",
+    "kind": "code",
+    "chunk_id": 52
+  },
+  {
+    "source": "heuristics.py",
+    "title": "heuristics",
+    "section": "class Finding",
+    "text": "# (регэксп, severity, category, сообщение) — общие для многих языков\n_GENERIC = [\n    (re.compile(r\"(?:password|passwd|secret|api[_-]?key|token)\\s*[:=]\\s*['\\\"][^'\\\"]{6,}|['\\\"]sk_(?:live|test)_\\w+\",\n                re.IGNORECASE),\n     \"high\", \"bug\", \"Похоже на захардкоженный секрет — вынести в переменную окружения\"),\n    (re.compile(r\"\\bTODO|FIXME|XXX\\b\"),\n     \"low\", \"rec\", \"Незакрытый TODO/FIXME в новом коде\"),\n    (re.compile(r\"\\bhttp://\"),\n     \"low\", \"rec\", \"Незащищённый http:// — по возможности использовать https\"),\n    (re.compile(r\".{121,}\"),\n     \"low\", \"rec\", \"Строка длиннее 120 символов — тяжело читать\"),\n]",
+    "kind": "code",
+    "chunk_id": 53
+  },
+  {
+    "source": "heuristics.py",
+    "title": "heuristics",
+    "section": "class Finding",
+    "text": "_PY = [\n    (re.compile(r\"except\\s*:|except\\s+Exception\\s*:\"),\n     \"medium\", \"bug\", \"Слишком широкий except — глотает ошибки, ловить конкретные исключения\"),\n    (re.compile(r\"\\beval\\(|\\bexec\\(\"),\n     \"high\", \"bug\", \"eval/exec на входных данных — риск инъекции кода\"),\n    (re.compile(r\"==\\s*None|!=\\s*None\"),\n     \"low\", \"rec\", \"Сравнение с None через ==; использовать `is None` / `is not None`\"),\n    (re.compile(r\"def\\s+\\w+\\([^)]*=\\s*(\\[\\]|\\{\\})\"),\n     \"medium\", \"bug\", \"Мутабельный аргумент по умолчанию ([]/{}) — общий стейт между вызовами\"),\n    (re.compile(r\"\\bprint\\(\"),\n     \"low\", \"arch\", \"print() в коде — для прод-логики использовать logging\"),\n    (re.compile(r\"\\bimport\\s+\\*\"),\n     \"medium\", \"arch\", \"Импорт * засоряет namespace и ломает статический анализ\"),\n    (re.compile(r\"subprocess\\.(?:run|call|Popen)\\([^)]*shell\\s*=\\s*True\"),\n     \"high\", \"bug\", \"subprocess с shell=True — риск shell-инъекции\"),\n    (re.compile(r\"assert\\s\"),\n     \"low\", \"rec\", \"assert выключается при python -O; для валидации не полагаться на него\"),\n]",
+    "kind": "code",
+    "chunk_id": 54
+  },
+  {
+    "source": "heuristics.py",
+    "title": "heuristics",
+    "section": "class Finding",
+    "text": "_JS = [\n    (re.compile(r\"\\bvar\\s+\\w\"),\n     \"low\", \"rec\", \"var — предпочесть let/const\"),\n    (re.compile(r\"==(?!=)|!=(?!=)\"),\n     \"medium\", \"bug\", \"Нестрогое сравнение ==/!=; использовать ===/!==\"),\n    (re.compile(r\"console\\.log\\(\"),\n     \"low\", \"arch\", \"console.log в коде — убрать перед мержем\"),\n    (re.compile(r\"\\beval\\(\"),\n     \"high\", \"bug\", \"eval() — риск инъекции\"),\n]\n\n_BY_LANG = {\"python\": _PY, \"javascript\": _JS, \"typescript\": _JS}",
+    "kind": "code",
+    "chunk_id": 55
+  },
+  {
+    "source": "heuristics.py",
+    "title": "heuristics",
+    "section": "def scan_file",
+    "text": "def scan_file(fd: FileDiff) -> list[Finding]:\n    rules = _GENERIC + _BY_LANG.get(fd.lang, [])\n    out: list[Finding] = []\n    for al in fd.added:\n        line = al.text\n        stripped = line.strip()\n        if not stripped or stripped.startswith((\"#\", \"//\", \"*\")):\n            # комментарии проверяем только на секреты/TODO (generic)\n            active = _GENERIC\n        else:\n            active = rules\n        for rx, sev, cat, msg in active:\n            if rx.search(line):\n                out.append(Finding(sev, cat, fd.path, al.lineno, msg))\n    # архитектурная эвристика на уровне файла: большой diff\n    if len(fd.added) > 150:\n        out.append(Finding(\"medium\", \"arch\", fd.path, 0,\n                           f\"Крупное изменение (+{len(fd.added)} строк) — \"\n                           \"возможно, стоит разбить PR на части\"))\n    return out",
+    "kind": "code",
+    "chunk_id": 56
+  },
+  {
+    "source": "heuristics.py",
+    "title": "heuristics",
+    "section": "def scan",
+    "text": "def scan(files: list[FileDiff]) -> list[Finding]:\n    out: list[Finding] = []\n    for fd in files:\n        out.extend(scan_file(fd))\n    # порядок по severity\n    order = {\"high\": 0, \"medium\": 1, \"low\": 2}\n    out.sort(key=lambda f: (order[f.severity], f.path, f.line))\n    return out\n\n\nif __name__ == \"__main__\":\n    import sys\n    from pathlib import Path\n    from diff_parser import parse_diff\n    text = (Path(sys.argv[1]).read_text(\"utf-8\") if len(sys.argv) > 1\n            else sys.stdin.read())\n    for f in scan(parse_diff(text)):\n        print(f.render(), f\"[{f.category}]\")",
+    "kind": "code",
+    "chunk_id": 57
+  },
+  {
+    "source": "indexer.py",
+    "title": "indexer",
+    "section": "module",
+    "text": "\"\"\"Индексатор: документация + код → index.json.\n\nОдна ответственность: собрать чанки из проекта (README, docs/, *.py) и\nсохранить их в JSON-индекс без внешней БД. Векторизация (TF-IDF) выполняется\nпри загрузке в search.py.\n\"\"\"\nfrom __future__ import annotations\n\nimport json\nfrom pathlib import Path\n\nfrom chunking import chunk_dir\n\nHERE = Path(__file__).parent\nINDEX_PATH = HERE / \"index.json\"",
+    "kind": "code",
+    "chunk_id": 58
+  },
+  {
+    "source": "indexer.py",
+    "title": "indexer",
+    "section": "def build_index",
+    "text": "def build_index(root: Path | None = None) -> list[dict]:\n    root = root or HERE\n    chunks = chunk_dir(root)\n    INDEX_PATH.write_text(\n        json.dumps(chunks, ensure_ascii=False, indent=2), encoding=\"utf-8\")\n    return chunks",
+    "kind": "code",
+    "chunk_id": 59
+  },
+  {
+    "source": "indexer.py",
+    "title": "indexer",
+    "section": "def load_index",
+    "text": "def load_index() -> list[dict]:\n    if not INDEX_PATH.exists():\n        return build_index()\n    return json.loads(INDEX_PATH.read_text(encoding=\"utf-8\"))\n\n\nif __name__ == \"__main__\":\n    chunks = build_index()\n    docs = sum(1 for c in chunks if c.get(\"kind\") == \"doc\")\n    code = sum(1 for c in chunks if c.get(\"kind\") == \"code\")\n    sources = sorted({c[\"source\"] for c in chunks})\n    print(f\"Индекс собран: {len(chunks)} чанков \"\n          f\"(doc={docs}, code={code}) из {len(sources)} файлов\")\n    for s in sources:\n        n = sum(1 for c in chunks if c[\"source\"] == s)\n        print(f\"  {s}: {n}\")\n    print(f\"Сохранено → {INDEX_PATH.name}\")",
+    "kind": "code",
+    "chunk_id": 60
+  },
+  {
+    "source": "review.py",
+    "title": "review",
+    "section": "module",
+    "text": "\"\"\"CLI точка входа AI-ревью — то, что запускает GitHub Action и человек.\n\nИсточник diff (по приоритету):\n  --diff FILE   — готовый *.diff файл (демо/тесты, офлайн);\n  --base REF    — git diff BASE...HEAD (реальный PR в CI);\n  (без флагов)  — git diff рабочего дерева (локальная проверка).\n\nПримеры:\n    python review.py --diff samples/sample_pr.diff\n    python review.py --base origin/master --out review.md\n    python review.py --no-llm                 # только эвристики+RAG\n\"\"\"\nfrom __future__ import annotations\n\nimport argparse\nimport sys\nfrom pathlib import Path\n\nimport git_tools\nfrom reviewer import review\n\nHERE = Path(__file__).parent",
+    "kind": "code",
+    "chunk_id": 61
+  },
+  {
+    "source": "review.py",
+    "title": "review",
+    "section": "def get_diff",
+    "text": "def get_diff(args) -> str:\n    if args.diff:\n        return Path(args.diff).read_text(\"utf-8\")\n    if not sys.stdin.isatty() and not args.base:\n        data = sys.stdin.read()\n        if data.strip():\n            return data\n    return git_tools.pr_diff(base=args.base, head=args.head)",
+    "kind": "code",
+    "chunk_id": 62
+  },
+  {
+    "source": "review.py",
+    "title": "review",
+    "section": "def main",
+    "text": "def main() -> None:\n    ap = argparse.ArgumentParser(description=\"AI code review для PR (task32)\")\n    ap.add_argument(\"--diff\", help=\"путь к готовому .diff файлу\")\n    ap.add_argument(\"--base\", help=\"базовая ветка/ref для diff BASE...HEAD\")\n    ap.add_argument(\"--head\", default=\"HEAD\", help=\"head ref (по умолч. HEAD)\")\n    ap.add_argument(\"--out\", help=\"куда записать ревью (markdown)\")\n    ap.add_argument(\"--no-llm\", action=\"store_true\",\n                    help=\"без LLM — только статический анализ + RAG\")\n    args = ap.parse_args()\n\n    diff = get_diff(args)\n    if not diff.strip():\n        print(\"Diff пуст — нечего ревьюить.\")\n        return\n\n    text = review(diff, use_llm=not args.no_llm)\n    if args.out:\n        Path(args.out).write_text(text, encoding=\"utf-8\")\n        print(f\"Ревью записано → {args.out}\")\n    else:\n        print(text)\n\n\nif __name__ == \"__main__\":\n    main()",
+    "kind": "code",
+    "chunk_id": 63
+  },
+  {
+    "source": "reviewer.py",
+    "title": "reviewer",
+    "section": "module",
+    "text": "\"\"\"Ядро AI code review: diff + RAG-контекст → текст ревью.\n\nПайплайн:\n  1. parse_diff        — изменённые файлы и добавленные строки;\n  2. heuristics.scan   — офлайн-находки (баги/архитектура/рекомендации);\n  3. RAG (search)      — по каждому файлу тянем релевантные куски документации\n                         и кода проекта (чтобы ревью учитывало контекст, а не\n                         только сам diff);\n  4. LLM-каскад        — DeepSeek API → Ollama → без LLM (только эвристики);\n  5. render_markdown   — итоговое ревью с 3 разделами.\n\nLLM выступает усилителем: даже без неё ревью содержательное (эвристики + RAG).\n\"\"\"\nfrom __future__ import annotations\n\nimport json\nimport os\nimport urllib.request\nfrom pathlib import Path\n\nimport heuristics\nfrom diff_parser import FileDiff, parse_diff, summary\nfrom indexer import load_index\nfrom search import build_backend\n\nHERE = Path(__file__).parent",
+    "kind": "code",
+    "chunk_id": 64
+  },
+  {
+    "source": "reviewer.py",
+    "title": "reviewer",
+    "section": "module",
+    "text": "# ------------------------------------------------------------- RAG-контекст --",
+    "kind": "code",
+    "chunk_id": 65
+  },
+  {
+    "source": "reviewer.py",
+    "title": "reviewer",
+    "section": "def rag_context",
+    "text": "def rag_context(backend, files: list[FileDiff], k: int = 3) -> str:\n    \"\"\"Для каждого файла ищем в индексе релевантные доки и код проекта.\"\"\"\n    blocks: list[str] = []\n    for fd in files:\n        query = f\"{fd.path}\\n{fd.added_text[:600]}\"\n        hits = backend.search(query, k=k)\n        lines = [f\"### Контекст для {fd.path}\"]\n        for score, ch in hits:\n            if score < 0.02:\n                continue\n            snippet = ch[\"text\"].replace(\"\\n\", \" \")[:220]\n            lines.append(f\"- [{score:.2f}] {ch['source']} :: \"\n                         f\"{ch['section']} — {snippet}\")\n        if len(lines) > 1:\n            blocks.append(\"\\n\".join(lines))\n    return \"\\n\\n\".join(blocks) or \"(релевантный контекст в индексе не найден)\"\n\n\n# --------------------------------------------------------------- LLM-каскад --",
+    "kind": "code",
+    "chunk_id": 66
+  },
+  {
+    "source": "reviewer.py",
+    "title": "reviewer",
+    "section": "def _prompt",
+    "text": "def _prompt(diff_text: str, findings, rag: str) -> str:\n    heur = \"\\n\".join(f\"- {f.severity}/{f.category} {f.path}:{f.line} \"\n                     f\"{f.message}\" for f in findings) or \"(эвристики пусты)\"\n    return (\n        \"Ты — старший инженер, делаешь ревью pull request. Отвечай на русском.\\n\"\n        \"Опирайся на: (1) сам diff, (2) находки статического анализатора, \"\n        \"(3) контекст проекта из RAG (документация + код). Не выдумывай.\\n\"\n        \"Верни строго три раздела маркдауном:\\n\"\n        \"## 🐞 Потенциальные баги\\n## 🏗 Архитектурные проблемы\\n\"\n        \"## 💡 Рекомендации\\n\"\n        \"Каждый пункт — конкретно, с указанием файла/строки, коротко.\\n\\n\"\n        f\"=== DIFF ===\\n{diff_text[:6000]}\\n\\n\"\n        f\"=== НАХОДКИ СТАТ.АНАЛИЗА ===\\n{heur}\\n\\n\"\n        f\"=== КОНТЕКСТ ПРОЕКТА (RAG) ===\\n{rag[:2500]}\\n\\n=== РЕВЬЮ ===\")",
+    "kind": "code",
+    "chunk_id": 67
+  },
+  {
+    "source": "reviewer.py",
+    "title": "reviewer",
+    "section": "def gen_deepseek",
+    "text": "def gen_deepseek(prompt: str) -> str | None:\n    key = os.getenv(\"DEEPSEEK_API_KEY\")\n    if not key or key == \"YOUR_DEEPSEEK_API_KEY\":\n        return None\n    body = json.dumps({\"model\": \"deepseek-chat\",\n                       \"messages\": [{\"role\": \"user\", \"content\": prompt}],\n                       \"temperature\": 0.2}).encode()\n    req = urllib.request.Request(\n        \"https://api.deepseek.com/chat/completions\", data=body,\n        headers={\"Authorization\": f\"Bearer {key}\",\n                 \"Content-Type\": \"application/json\"})\n    try:\n        with urllib.request.urlopen(req, timeout=90) as r:\n            return json.loads(r.read())[\"choices\"][0][\"message\"][\"content\"].strip()\n    except Exception as e:\n        print(f\"[deepseek недоступен: {e}]\")\n        return None",
+    "kind": "code",
+    "chunk_id": 68
+  },
+  {
+    "source": "reviewer.py",
+    "title": "reviewer",
+    "section": "def gen_ollama",
+    "text": "def gen_ollama(prompt: str) -> str | None:\n    body = json.dumps({\"model\": os.getenv(\"OLLAMA_MODEL\", \"qwen3:14b\"),\n                       \"prompt\": prompt, \"stream\": False}).encode()\n    req = urllib.request.Request(\"http://localhost:11434/api/generate\",\n                                data=body,\n                                headers={\"Content-Type\": \"application/json\"})\n    try:\n        with urllib.request.urlopen(req, timeout=120) as r:\n            return json.loads(r.read()).get(\"response\", \"\").strip() or None\n    except Exception:\n        return None\n\n\n# ------------------------------------------------------ рендер без LLM --------",
+    "kind": "code",
+    "chunk_id": 69
+  },
+  {
+    "source": "reviewer.py",
+    "title": "reviewer",
+    "section": "def render_heuristic",
+    "text": "def render_heuristic(findings) -> str:\n    buckets = {\"bug\": [], \"arch\": [], \"rec\": []}\n    for f in findings:\n        buckets[f.category].append(f\"- {f.render()}\")\n    titles = {\"bug\": \"## 🐞 Потенциальные баги\",\n              \"arch\": \"## 🏗 Архитектурные проблемы\",\n              \"rec\": \"## 💡 Рекомендации\"}\n    out = []\n    for cat in (\"bug\", \"arch\", \"rec\"):\n        out.append(titles[cat])\n        out.append(\"\\n\".join(buckets[cat]) if buckets[cat]\n                   else \"- Проблем не выявлено.\")\n        out.append(\"\")\n    return \"\\n\".join(out)\n\n\n# ----------------------------------------------------------------- пайплайн --",
+    "kind": "code",
+    "chunk_id": 70
+  },
+  {
+    "source": "reviewer.py",
+    "title": "reviewer",
+    "section": "def review",
+    "text": "def review(diff_text: str, use_llm: bool = True) -> str:\n    files = parse_diff(diff_text)\n    if not files:\n        return \"PR не содержит изменений в отслеживаемых файлах.\"\n\n    findings = heuristics.scan(files)\n    backend = build_backend(load_index())\n    rag = rag_context(backend, files)\n\n    header = [f\"# 🤖 AI-ревью PR\", \"\", summary(files), \"\",\n              f\"Файлов: {len(files)} · находок стат.анализа: {len(findings)} \"\n              f\"· RAG-бэкенд: {backend.name} ({len(backend.chunks)} чанков)\", \"\"]",
+    "kind": "code",
+    "chunk_id": 71
+  },
+  {
+    "source": "reviewer.py",
+    "title": "reviewer",
+    "section": "def review",
+    "text": "body = None\n    if use_llm:\n        prompt = _prompt(diff_text, findings, rag)\n        text = gen_deepseek(prompt) or gen_ollama(prompt)\n        if text:\n            body = (text + \"\\n\\n---\\n### 🔎 Находки статического анализатора\\n\"\n                    + render_heuristic(findings))\n    if body is None:\n        body = (\"> LLM недоступна — ревью собрано статическим анализатором \"\n                \"и RAG-контекстом.\\n\\n\" + render_heuristic(findings))\n\n    footer = [\"\", \"---\", \"<details><summary>📚 RAG-контекст (док-я + код)</summary>\",\n              \"\", rag, \"</details>\", \"\",\n              \"_Сгенерировано автоматически (task32, AI code review)._\"]\n    return \"\\n\".join(header) + body + \"\\n\".join(footer)",
+    "kind": "code",
+    "chunk_id": 72
+  },
+  {
+    "source": "reviewer.py",
+    "title": "reviewer",
+    "section": "def review",
+    "text": "if __name__ == \"__main__\":\n    import sys\n    src = sys.argv[1] if len(sys.argv) > 1 else None\n    diff = Path(src).read_text(\"utf-8\") if src else sys.stdin.read()\n    print(review(diff))",
+    "kind": "code",
+    "chunk_id": 73
+  },
+  {
+    "source": "search.py",
+    "title": "search",
+    "section": "module",
+    "text": "\"\"\"Векторный поиск по чанкам (документация + код).\n\nБэкенд эмбеддингов — TF-IDF на чистом stdlib (math/collections): работает\nофлайн, без внешних зависимостей и без поднятого Qdrant/Ollama. Метрика —\nкосинусная близость. Возвращает топ-K чанков со score.\n\nПереиспользован из task31.1 (ассистент разработчика) без изменений логики —\nодна ответственность: retrieval.\n\"\"\"\nfrom __future__ import annotations\n\nimport math\nimport re\nfrom collections import Counter\n\n_WORD = re.compile(r\"[а-яёa-z0-9_]+\", re.IGNORECASE)",
+    "kind": "code",
+    "chunk_id": 74
+  },
+  {
+    "source": "search.py",
+    "title": "search",
+    "section": "def tokenize",
+    "text": "def tokenize(text: str) -> list[str]:\n    return [w.lower() for w in _WORD.findall(text)]",
+    "kind": "code",
+    "chunk_id": 75
+  },
+  {
+    "source": "search.py",
+    "title": "search",
+    "section": "class TfidfBackend",
+    "text": "class TfidfBackend:\n    \"\"\"TF-IDF векторизация + косинус. Без внешних зависимостей.\"\"\"\n\n    name = \"tfidf\"\n\n    def __init__(self, chunks: list[dict]):\n        self.chunks = chunks\n        docs = [tokenize(c[\"text\"]) for c in chunks]\n        n = len(docs)\n        df: Counter = Counter()\n        for toks in docs:\n            for t in set(toks):\n                df[t] += 1\n        self.idf = {t: math.log((1 + n) / (1 + d)) + 1.0 for t, d in df.items()}\n        self.vectors = [self._vec(toks) for toks in docs]\n\n    def _vec(self, toks: list[str]) -> dict[str, float]:\n        tf = Counter(toks)\n        total = len(toks) or 1\n        v = {t: (c / total) * self.idf.get(t, 0.0) for t, c in tf.items()}\n        norm = math.sqrt(sum(x * x for x in v.values())) or 1.0\n        return {t: x / norm for t, x in v.items()}",
+    "kind": "code",
+    "chunk_id": 76
+  },
+  {
+    "source": "search.py",
+    "title": "search",
+    "section": "class TfidfBackend",
+    "text": "@staticmethod\n    def _cos(a: dict, b: dict) -> float:\n        if len(a) > len(b):\n            a, b = b, a\n        return sum(x * b.get(t, 0.0) for t, x in a.items())\n\n    def search(self, query: str, k: int = 4) -> list[tuple[float, dict]]:\n        qv = self._vec(tokenize(query))\n        scored = [(self._cos(qv, dv), self.chunks[i])\n                  for i, dv in enumerate(self.vectors)]\n        scored.sort(key=lambda x: x[0], reverse=True)\n        return scored[:k]",
+    "kind": "code",
+    "chunk_id": 77
+  },
+  {
+    "source": "search.py",
+    "title": "search",
+    "section": "def build_backend",
+    "text": "def build_backend(chunks: list[dict]) -> TfidfBackend:\n    return TfidfBackend(chunks)\n\n\nif __name__ == \"__main__\":\n    import json\n    from pathlib import Path\n    idx = json.loads((Path(__file__).parent / \"index.json\").read_text(\"utf-8\"))\n    be = build_backend(idx)\n    print(f\"backend={be.name}, чанков={len(idx)}\")\n    for score, ch in be.search(\"как устроен пайплайн ревью\", k=3):\n        print(f\"  {score:.3f}  {ch['source']}::{ch['section']}\")",
+    "kind": "code",
+    "chunk_id": 78
+  }
+]
