@@ -1,0 +1,170 @@
+[
+  {
+    "source": "README.md",
+    "title": "deepseek-chat — учебный проект курса БЛМ",
+    "section": "intro",
+    "text": "# deepseek-chat — учебный проект курса БЛМ\n\nРепозиторий: https://github.com/mrsmith113/deepseek-chat\n\nЭто рабочий репозиторий курса «Большие Языковые Модели» (Alex Gladkov). Каждое\nдомашнее задание — отдельная папка `taskN/` в корне. Внутри — код задания,\nпояснение (`EXPLANATION.md`) и сценарий видео (`VIDEO_SCENARIO.md`).",
+    "chunk_id": 0
+  },
+  {
+    "source": "README.md",
+    "title": "deepseek-chat — учебный проект курса БЛМ",
+    "section": "Что делает проект",
+    "text": "Проект развивается от простого CLI-чата с DeepSeek API до полноценного\nRAG-стека с локальной LLM, MCP-серверами и агентами. Ветка разработки — `master`.",
+    "chunk_id": 1
+  },
+  {
+    "source": "README.md",
+    "title": "deepseek-chat — учебный проект курса БЛМ",
+    "section": "Стек",
+    "text": "- **LLM:** DeepSeek API (облако) + Ollama/Qwen3 14B (локально).\n- **Эмбеддинги:** GigaEmbeddings (ai-sage, 2048 dim).\n- **Векторная БД:** Qdrant (HTTP :6333), коллекция `youtube_rag`.\n- **RAG-сервер:** FastAPI :8000 + MCP :8002.\n- **Данные:** 351 YouTube-транскрипт компании Юко.\n- **Python:** venv `~/rag-env/` (RAG-стек), `~/torch-env/` (torch).",
+    "chunk_id": 2
+  },
+  {
+    "source": "README.md",
+    "title": "deepseek-chat — учебный проект курса БЛМ",
+    "section": "Как устроен репозиторий",
+    "text": "- Корень — ранние таски одним файлом: `cli.py`, `bot.py`, `task3.py`…`task11.py`.\n- `taskN/` — поздние таски папкой (RAG, MCP, агенты).\n- Каждый таск самодостаточен: запускается одной командой.",
+    "chunk_id": 3
+  },
+  {
+    "source": "README.md",
+    "title": "deepseek-chat — учебный проект курса БЛМ",
+    "section": "Ключевые команды CLI (cli.py)",
+    "text": "- `/mode free|strict|nano` — режим ответа модели.\n- `/settings` — показать настройки.\n- `/clear` — очистить историю диалога.\n- `/help` — справка.\n- `выход` / `exit` — выйти.",
+    "chunk_id": 4
+  },
+  {
+    "source": "README.md",
+    "title": "deepseek-chat — учебный проект курса БЛМ",
+    "section": "Как запустить чат",
+    "text": "```bash\nexport DEEPSEEK_API_KEY=sk-...\npython3 cli.py\n```",
+    "chunk_id": 5
+  },
+  {
+    "source": "README.md",
+    "title": "deepseek-chat — учебный проект курса БЛМ",
+    "section": "Git-workflow",
+    "text": "```bash\ncd GIT\ngit add taskN/\ngit commit -m \"taskN: описание\"\ngit push origin master\n```\n\nПодробнее — в `docs/architecture.md`, `docs/tasks.md`, `docs/cli-api.md`.",
+    "chunk_id": 6
+  },
+  {
+    "source": "architecture.md",
+    "title": "Архитектура проекта deepseek-chat",
+    "section": "intro",
+    "text": "# Архитектура проекта deepseek-chat",
+    "chunk_id": 7
+  },
+  {
+    "source": "architecture.md",
+    "title": "Архитектура проекта deepseek-chat",
+    "section": "Слои",
+    "text": "1. **CLI-слой** — `cli.py`, точка входа для диалога с DeepSeek. Держит\n   историю сообщений в памяти и режимы ответа (free/strict/nano).\n2. **LLM-слой** — два провайдера:\n   - DeepSeek API (облако) через HTTP, ключ в env `DEEPSEEK_API_KEY`.\n   - Ollama + Qwen3 14B (локально, порт :11434) — для офлайн-инференса.\n3. **RAG-слой** — пайплайн ретривала:\n   - чанкинг документов,\n   - эмбеддинги (GigaEmbeddings, 2048 dim),\n   - хранение в Qdrant (коллекция `youtube_rag`, ~1792 вектора),\n   - реранкинг (threshold + MMR), цитаты.\n4. **MCP-слой** — серверы Model Context Protocol дают модели инструменты:\n   доступ к CouchDB (task17), к git-контексту (task32) и т.д. Транспорт —\n   stdio или HTTP через nginx.\n5. **Агентный слой** — YAML-профили агентов под разные задачи (task31).",
+    "chunk_id": 8
+  },
+  {
+    "source": "architecture.md",
+    "title": "Архитектура проекта deepseek-chat",
+    "section": "Поток данных RAG",
+    "text": "```\nдокумент → chunking.py → чанки+метаданные → indexer.py → эмбеддинги → индекс\nзапрос → эмбеддинг запроса → cosine similarity → топ-K чанков → LLM → ответ\n```",
+    "chunk_id": 9
+  },
+  {
+    "source": "architecture.md",
+    "title": "Архитектура проекта deepseek-chat",
+    "section": "Метаданные чанка",
+    "text": "Каждый чанк несёт: `source` (файл), `title` (заголовок документа),\n`section` (заголовок секции), `chunk_id` (порядковый номер).",
+    "chunk_id": 10
+  },
+  {
+    "source": "architecture.md",
+    "title": "Архитектура проекта deepseek-chat",
+    "section": "Инфраструктура",
+    "text": "- Домашняя машина — индексация и torch (`~/torch-env/`).\n- NL №1 (VPS) — MCP-сервисы, общий venv `/opt/mcp-venv/`.\n- Один shared venv на все MCP-сервисы: новые зависимости ставятся туда.",
+    "chunk_id": 11
+  },
+  {
+    "source": "architecture.md",
+    "title": "Архитектура проекта deepseek-chat",
+    "section": "Ассистент разработчика (task32)",
+    "text": "Отдельный слой поверх репозитория: RAG над README+docs проекта плюс живой\ngit-контекст через MCP. Команда `/help` отвечает на вопросы о структуре\nпроекта, объединяя найденные фрагменты документации и текущее состояние git\n(ветка, изменённые файлы, diff).",
+    "chunk_id": 12
+  },
+  {
+    "source": "cli-api.md",
+    "title": "API и команды",
+    "section": "intro",
+    "text": "# API и команды",
+    "chunk_id": 13
+  },
+  {
+    "source": "cli-api.md",
+    "title": "API и команды",
+    "section": "CLI (cli.py)",
+    "text": "Интерактивный чат. Env `DEEPSEEK_API_KEY` обязателен.\n\n| Команда | Действие |\n|---|---|\n| `/mode free` | Без ограничений (по умолчанию) |\n| `/mode strict` | Краткий формат + стоп-фраза `[КОНЕЦ]` |\n| `/mode nano` | Ровно 10 слов |\n| `/settings` | Показать текущие настройки |\n| `/clear` | Очистить историю диалога |\n| `/help` | Справка |\n| `выход` / `exit` | Выйти |",
+    "chunk_id": 14
+  },
+  {
+    "source": "cli-api.md",
+    "title": "API и команды",
+    "section": "assistant.py — команда /help",
+    "text": "```bash\npython3 assistant.py \"как устроен RAG в проекте?\"\npython3 assistant.py            # интерактивный режим, команда /help\n```\n\nПайплайн: вопрос → RAG-поиск по README+docs → сбор git-контекста через MCP-\nинструменты → генерация ответа (DeepSeek если есть ключ, иначе extractive).",
+    "chunk_id": 15
+  },
+  {
+    "source": "cli-api.md",
+    "title": "API и команды",
+    "section": "MCP-инструменты (mcp_server.py)",
+    "text": "Сервер Model Context Protocol, транспорт stdio. Инструменты:\n\n| Инструмент | Вход | Выход |\n|---|---|---|\n| `git_branch` | — | текущая ветка репозитория |\n| `git_files` | — | список файлов под контролем git |\n| `git_diff` | `staged?: bool` | unified diff рабочего дерева |",
+    "chunk_id": 16
+  },
+  {
+    "source": "cli-api.md",
+    "title": "API и команды",
+    "section": "RAG-индекс (index.json)",
+    "text": "Формат: массив объектов чанков.\n\n```json\n{\n  \"chunk_id\": 0,\n  \"source\": \"README.md\",\n  \"title\": \"deepseek-chat\",\n  \"section\": \"Стек\",\n  \"text\": \"LLM: DeepSeek API ...\"\n}\n```",
+    "chunk_id": 17
+  },
+  {
+    "source": "cli-api.md",
+    "title": "API и команды",
+    "section": "Схема эмбеддингов",
+    "text": "- Backend по умолчанию: **TF-IDF** (чистый stdlib, без зависимостей).\n- Опционально: **sentence-transformers** (dense-векторы), если установлен.\n- Метрика близости: косинус.",
+    "chunk_id": 18
+  },
+  {
+    "source": "tasks.md",
+    "title": "Карта заданий (taskN)",
+    "section": "intro",
+    "text": "# Карта заданий (taskN)\n\nРепозиторий устроен по принципу «одно задание — одна папка/файл». Ниже —\nориентир по ключевым таскам.",
+    "chunk_id": 19
+  },
+  {
+    "source": "tasks.md",
+    "title": "Карта заданий (taskN)",
+    "section": "Ранние таски (один файл в корне)",
+    "text": "- `cli.py` — CLI-чат с DeepSeek, режимы free/strict/nano, история диалога.\n- `bot.py` — Telegram-бот поверх DeepSeek.\n- `task3.py`…`task11.py` — промпт-инжиниринг, функции, память диалога,\n  структурированный вывод, ранние эксперименты.",
+    "chunk_id": 20
+  },
+  {
+    "source": "tasks.md",
+    "title": "Карта заданий (taskN)",
+    "section": "RAG-таски (папки)",
+    "text": "- `task21` — базовый RAG: чанкинг + индексатор + сравнение (JSON-индекс без сервера).\n- `task22` — оценка качества RAG (eval), настройка `num_predict`.\n- `task23` — реранкинг: threshold-фильтр, MMR, переписывание запроса.\n- `task24` — RAG с цитатами (ссылки на источник в ответе).\n- `task25` — RAG-чат с памятью в Telegram (GigaEmbeddings + Qdrant + DeepSeek).\n- `task26`+`task27` — локальная LLM (Ollama/Qwen3) + RAG CLI-утилита.\n- `task28` — локальный RAG офлайн.\n- `task29` — бенчмарк и оптимизация RAG.",
+    "chunk_id": 21
+  },
+  {
+    "source": "tasks.md",
+    "title": "Карта заданий (taskN)",
+    "section": "MCP и агенты",
+    "text": "- `task17` — MCP-сервер к CouchDB (`api1.notifikatai.ru/mcp`), systemd + nginx.\n- `task18` — challenge-bot + challenge-mcp.\n- `task30` — Claude-прокси + харнесс с tool-calling.\n- `task31` — агентная платформа: YAML-профили агентов.\n- `task32` — ассистент разработчика: RAG над docs + MCP git-контекст + `/help`.",
+    "chunk_id": 22
+  },
+  {
+    "source": "tasks.md",
+    "title": "Карта заданий (taskN)",
+    "section": "Правила",
+    "text": "- Ветка разработки — `master`.\n- Каждый таск запускается одной командой.\n- Новый код кладём в `taskN/`, не в старые папки.",
+    "chunk_id": 23
+  }
+]

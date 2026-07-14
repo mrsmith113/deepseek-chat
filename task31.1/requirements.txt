@@ -1,0 +1,4 @@
+# Базовый режим работает на чистом stdlib (python3), без установки чего-либо.
+# Пакеты ниже — опциональные, для dense-эмбеддингов (EMB_BACKEND=dense):
+sentence-transformers>=2.2
+numpy>=1.24
