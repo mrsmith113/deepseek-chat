@@ -1,0 +1,7 @@
+# Ядро пайплайна работает на чистом stdlib — внешних зависимостей НЕ требуется.
+# (crm_tools, mcp_crm_server, chunking, search TF-IDF, indexer, assistant,
+#  support — только стандартная библиотека Python 3.10+.)
+#
+# Опционально, если захочется dense-эмбеддинги вместо TF-IDF (EMB_BACKEND=dense):
+# sentence-transformers>=2.2
+# numpy>=1.24
