@@ -1,0 +1,9 @@
+# Зависимостей нет — только stdlib (Python 3.10+).
+# fs_tools, mcp_fs_server, llm, agent, main — всё на стандартной библиотеке:
+# ast, json, urllib, difflib, pathlib, fnmatch, re, argparse.
+#
+# LLM-каскад ходит в сеть через urllib и полностью опционален:
+#   DEEPSEEK_API_KEY — ключ DeepSeek (если задан — используется первым);
+#   OLLAMA_HOST / OLLAMA_MODEL — локальная Ollama (по умолчанию
+#     http://localhost:11434, модель qwen3:14b).
+# Нет ни ключа, ни Ollama — агент работает офлайн на детерминированных планах.
