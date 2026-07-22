@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+# скриншоты генерятся прогоном; храним только отчёты
+level2_smoke/screenshots/*.png

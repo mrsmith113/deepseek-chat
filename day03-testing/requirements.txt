@@ -1,0 +1,9 @@
+# Тестовый харнесс Дня 3 (изолированный .venv, не прод-код тасков).
+# Ставится: python3 -m venv --system-site-packages .venv && .venv/bin/pip install -r requirements.txt
+pytest>=8
+# Level 2 smoke — мишень + драйвер:
+fastapi>=0.110
+uvicorn>=0.27
+python-multipart>=0.0.9
+playwright>=1.40
+# после install: .venv/bin/playwright install chromium
